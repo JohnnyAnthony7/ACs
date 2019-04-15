@@ -89,7 +89,11 @@ Ler reviews existentes
 
 @app.route('/socialfilm/reviews/<film_id>/<user_id>', methods=['GET'])
 def get_review(film_id,user_id):
-   return 'ola'
+    for x in range (len(reviews)):
+        if film_id==reviews[x]['film_id'] and user_id==reviews[x]['user_id']:
+            return jsonify({"user_id":user_id, "comment":reviews[x]['comment']})
+    return jsonify({"erro":"comentario nao encontrado"}),404
+
 
 '''
 Adicionar um comentario:
@@ -119,7 +123,13 @@ Adicionar um comentario:
 '''
 @app.route('/socialfilm/reviews/<film_id>/<user_id>', methods=['PUT'])
 def put_review(film_id,user_id):
-   return 'ola2'
+    dici=request.json
+    for x in range (len(reviews)):
+        if film_id==reviews[x]['film_id'] and user_id==reviews[x]['user_id']:
+            reviews[x]['comment']=dici['comment']
+            return jsonify({"film_id":film_id,"user_id":user_id,"comment":dici['comment']})
+    reviews.append({"film_id":film_id,"user_id":user_id,"comment":dici['comment']})
+    return jsonify({"film_id":film_id,"user_id":user_id,"comment":dici['comment']})
 
 '''
 quando acessarmos a url /socialfilm/reviews/all_films/<user_id> com o metodo GET,
@@ -130,7 +140,12 @@ Cada dicionário tem que ter as chaves "film_id" "user_id" e "comment"
 '''
 @app.route('/socialfilm/reviews/all_films/<user_id>', methods=['GET'])
 def all_reviews(user_id):
-  return 'ola3'
+    todasReviews=[]
+    for x in range(len(reviews)):
+        if reviews[x]['user_id']==user_id:
+            todasReviews.append({"film_id":reviews[x]["film_id"], "user_id":reviews[x]["user_id"],
+            "comment":reviews[x]["comment"]})
+    return jsonify(todasReviews)
 
 
 '''
@@ -145,7 +160,11 @@ Agora, façamos a parte das estrelas:
 '''
 @app.route('/socialfilm/stars/<film_id>/<user_id>', methods=['GET'])
 def retorna_estrelas(film_id,user_id):
-    return 'estrelas'
+    for x in range(len(notas)):
+        if film_id==notas[x]["film_id"] and user_id==notas[x]["user_id"] and (len(str(notas[x]["stars"]))>0):
+            return jsonify({"stars":notas[x]["stars"]})
+    return jsonify({"error":"review nao encontrada"}),404          
+        
 
 
 '''
@@ -160,9 +179,15 @@ filme que nao avaliou ainda
 '''
 
 
-@Aapp.route('/socialfilm/stars/<film_id>/<user_id>', methods=['PUT'])
+@app.route('/socialfilm/stars/<film_id>/<user_id>', methods=['PUT'])
 def add_estrelas(film_id,user_id):
-    return 'mais estrelas'
+    dici=request.json
+    for x in range(len(notas)):
+        if film_id==notas[x]["film_id"] and user_id==notas[x]["user_id"]:
+            notas[x]["stars"]=dici["stars"]
+            return jsonify({"film_id":film_id, "user_id":user_id, "stars":dici['stars']})
+    notas.append({"film_id":film_id, "user_id":user_id, "stars":dici['stars']})
+    return jsonify({"film_id":film_id, "user_id":user_id, "stars":dici['stars']})
 
 '''
 Para vermos a média de estrelas de um filme, podemos acessar a URL
@@ -174,7 +199,12 @@ ou 'nao avaliado' se nenhum usuário avaliou o filme ainda
 '''
 @app.route('/socialfilm/stars/<film_id>/average', methods=['GET'])
 def retorna_media(film_id):
-    return '12'
+    notasFilme=[]
+    for x in range(len(notas)):
+        if film_id==notas[x]["film_id"]:
+            notasFilme.append(notas[x]["stars"])
+    media=sum(notasFilme)/len(notasFilme)
+    return jsonify({"average_stars":media})
 
 '''
 Agora, chegou a hora de integrar seu servidor ao OMDB
